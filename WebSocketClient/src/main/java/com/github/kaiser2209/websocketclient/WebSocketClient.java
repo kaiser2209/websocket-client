@@ -5,10 +5,8 @@ import android.util.Log;
 import com.github.kaiser2209.websocketclient.utils.JsonUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
-
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,13 +22,39 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
     private MediaListener mediaListener = null;
     private boolean connected = false;
     private boolean autoReconnect = false;
+    private static volatile WebSocketClient instance = null;
 
-    public WebSocketClient(URI serverUri) {
+    private WebSocketClient(URI serverUri) {
         super(serverUri);
     }
 
-    public WebSocketClient(URI serverUri, Map<String, String> httpHeaders) {
+    private WebSocketClient(URI serverUri, Map<String, String> httpHeaders) {
         super(serverUri, new Draft_6455(), httpHeaders, 0);
+    }
+
+    private WebSocketClient(WebSocketOptions webSocketOptions) {
+        this(
+                URI.create("ws://" + webSocketOptions.getServerIP() + ":" + webSocketOptions.getServerPort()),
+                webSocketOptions.getHeaders()
+        );
+    }
+
+    public static WebSocketClient getInstance(WebSocketOptions webSocketOptions) {
+        if(instance == null) {
+            synchronized (WebSocketClient.class) {
+                if(instance == null) {
+                    instance = new WebSocketClient(
+                            webSocketOptions
+                    );
+                }
+            }
+        }
+
+        if(!instance.isOpen()) {
+            instance.connect();
+        }
+
+        return instance;
     }
 
     @Override
