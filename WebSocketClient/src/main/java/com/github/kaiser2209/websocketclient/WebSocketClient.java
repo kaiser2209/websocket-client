@@ -24,6 +24,7 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
     private boolean autoReconnect = false;
     private static volatile WebSocketClient instance = null;
 
+    @Deprecated
     private WebSocketClient(URI serverUri) {
         super(serverUri);
     }
