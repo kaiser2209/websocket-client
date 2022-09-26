@@ -42,7 +42,7 @@ public class WebSocketOptions {
             return this;
         }
 
-        public Builder serverPort(int serverPort) {
+        public Builder setServerPort(int serverPort) {
             this.serverPort = serverPort;
             return this;
         }

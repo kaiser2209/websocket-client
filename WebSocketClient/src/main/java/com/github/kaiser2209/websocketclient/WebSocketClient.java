@@ -8,8 +8,11 @@ import com.google.gson.reflect.TypeToken;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
     private OpenHandler openHandler = null;
@@ -22,7 +25,8 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
     private MediaListener mediaListener = null;
     private boolean connected = false;
     private boolean autoReconnect = false;
-    private static volatile WebSocketClient instance = null;
+    private WebSocketApp webSocketApp;
+    private static List<WebSocketClient> instances = new ArrayList<>();
 
     @Deprecated
     private WebSocketClient(URI serverUri) {
@@ -40,22 +44,25 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
         );
     }
 
-    public static WebSocketClient getInstance(WebSocketOptions webSocketOptions) {
-        if(instance == null) {
-            synchronized (WebSocketClient.class) {
-                if(instance == null) {
-                    instance = new WebSocketClient(
-                            webSocketOptions
-                    );
-                }
-            }
+    private WebSocketClient(WebSocketApp webSocketApp) {
+        this(webSocketApp.getWebSocketOptions());
+        this.webSocketApp = webSocketApp;
+    }
+
+    public WebSocketClient getWebSocketClient(WebSocketApp webSocketApp) {
+        WebSocketClient webSocketClient = new WebSocketClient(webSocketApp);
+        int indexOf = instances.indexOf(webSocketClient);
+        if(indexOf > -1) {
+            webSocketClient = instances.get(indexOf);
+        } else {
+            instances.add(webSocketClient);
         }
 
-        if(!instance.isOpen()) {
-            instance.connect();
+        if(!webSocketClient.isOpen()) {
+            webSocketClient.connect();
         }
 
-        return instance;
+        return webSocketClient;
     }
 
     @Override
@@ -256,5 +263,18 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
 
     public static interface MediaListener {
         public void onReceive(Map<String, Object> mediaData);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WebSocketClient that = (WebSocketClient) o;
+        return Objects.equals(webSocketApp, that.webSocketApp);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(webSocketApp);
     }
 }
