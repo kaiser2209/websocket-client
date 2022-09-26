@@ -49,7 +49,7 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
         this.webSocketApp = webSocketApp;
     }
 
-    public WebSocketClient getWebSocketClient(WebSocketApp webSocketApp) {
+    public static WebSocketClient getWebSocketClient(WebSocketApp webSocketApp) {
         WebSocketClient webSocketClient = new WebSocketClient(webSocketApp);
         int indexOf = instances.indexOf(webSocketClient);
         if(indexOf > -1) {
