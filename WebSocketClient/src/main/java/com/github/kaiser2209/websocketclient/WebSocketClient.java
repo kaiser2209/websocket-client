@@ -23,6 +23,9 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
     private FilialListener filialListener = null;
     private DefinitionListener definitionListener = null;
     private MediaListener mediaListener = null;
+    private PlaylistListener playlistListener = null;
+    private NewsListener newsListener = null;
+    private WeatherBaseListener weatherBaseListener = null;
     private boolean connected = false;
     private boolean autoReconnect = false;
     private WebSocketApp webSocketApp;
@@ -111,6 +114,17 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
                     if (mediaListener != null)
                         mediaListener.onReceive(data);
                     break;
+                case "playlistListener":
+                    if(playlistListener != null)
+                        playlistListener.onReceive(data);
+                    break;
+                case "getNews":
+                    if(newsListener != null)
+                        newsListener.onReceive(data);
+                    break;
+                case "weatherBaseListener":
+                    if(weatherBaseListener != null)
+                        weatherBaseListener.onReceive(data);
             }
         }
     }
@@ -128,7 +142,7 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
         Log.d("WebSocketClient", "Erro: " + ex.getMessage());
     }
 
-    public void addFirestoreListener() {
+    private void addFirestoreListener() {
         send(JsonUtils.CreateJson.getInstance()
                 .addProperty("type", "command")
                 .addProperty("cmd", "addFirestoreListener")
@@ -136,7 +150,7 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
         );
     }
 
-    public void addCommandListener() {
+    private void addCommandListener() {
         send(JsonUtils.CreateJson.getInstance()
                 .addProperty("type", "command")
                 .addProperty("cmd", "addCommandListener")
@@ -144,10 +158,18 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
         );
     }
 
-    public void addDeviceListener() {
+    private void addDeviceListener() {
         send(JsonUtils.CreateJson.getInstance()
                 .addProperty("type", "command")
                 .addProperty("cmd", "addDeviceListener")
+                .build()
+        );
+    }
+
+    public void removeDeviceListener() {
+        send(JsonUtils.CreateJson.getInstance()
+                .addProperty("type", "command")
+                .addProperty("cmd", "removeDeviceListener")
                 .build()
         );
     }
@@ -161,7 +183,16 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
         );
     }
 
-    public void addFilialListener(String idFilial) {
+    public void removeDefinitionListener(String idDefinition) {
+        send(JsonUtils.CreateJson.getInstance()
+                .addProperty("type", "command")
+                .addProperty("cmd", "removeDefinitionListener")
+                .addProperty("idDefinition", idDefinition)
+                .build()
+        );
+    }
+
+    private void addFilialListener(String idFilial) {
         send(JsonUtils.CreateJson.getInstance()
                 .addProperty("type", "command")
                 .addProperty("cmd", "addFilialListener")
@@ -170,10 +201,73 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
         );
     }
 
-    public void addMediaListener(String idGroup) {
+    public void removeFilialListener(String idFilial) {
+        send(JsonUtils.CreateJson.getInstance()
+                .addProperty("type", "command")
+                .addProperty("cmd", "removeFilialListener")
+                .addProperty("idFilial", idFilial)
+                .build()
+        );
+    }
+
+    private void addPlaylistListener(String idGroup) {
+        send(JsonUtils.CreateJson.getInstance()
+                .addProperty("type", "command")
+                .addProperty("cmd", "addPlaylistListener")
+                .addProperty("idGroup", idGroup)
+                .build()
+        );
+    }
+
+    private void getNews(String category) {
+        send(JsonUtils.CreateJson.getInstance()
+                .addProperty("type", "command")
+                .addProperty("cmd", "getNews")
+                .addProperty("category", category)
+                .build()
+        );
+    }
+
+    public void removeWeatherBaseListener(String baseId) {
+        send(JsonUtils.CreateJson.getInstance()
+                .addProperty("type", "command")
+                .addProperty("cmd", "removeWeatherBase")
+                .addProperty("baseId", baseId)
+                .build()
+        );
+    }
+
+    private void addWeatherBaseListener(String baseId) {
+        send(JsonUtils.CreateJson.getInstance()
+                .addProperty("type", "command")
+                .addProperty("cmd", "addWeatherBase")
+                .addProperty("baseId", baseId)
+                .build()
+        );
+    }
+
+    public void removePlaylistListener(String idGroup) {
+        send(JsonUtils.CreateJson.getInstance()
+                .addProperty("type", "command")
+                .addProperty("cmd", "removePlaylistListener")
+                .addProperty("idGroup", idGroup)
+                .build()
+        );
+    }
+
+    private void addMediaListener(String idGroup) {
         send(JsonUtils.CreateJson.getInstance()
                 .addProperty("type", "command")
                 .addProperty("cmd", "addMediaListener")
+                .addProperty("idGroup", idGroup)
+                .build()
+        );
+    }
+
+    public void removeMediaListener(String idGroup) {
+        send(JsonUtils.CreateJson.getInstance()
+                .addProperty("type", "command")
+                .addProperty("cmd", "removeMediaListener")
                 .addProperty("idGroup", idGroup)
                 .build()
         );
@@ -202,6 +296,21 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
     public void addMediaListener(String idGroup, MediaListener mediaListener) {
         addMediaListener(idGroup);
         this.mediaListener = mediaListener;
+    }
+
+    public void addPlaylistListener(String idGroup, PlaylistListener playlistListener) {
+        addPlaylistListener(idGroup);
+        this.playlistListener = playlistListener;
+    }
+
+    public void getNews(String category, NewsListener newsListener) {
+        getNews(category);
+        this.newsListener = newsListener;
+    }
+
+    public void addWeatherBaseListener(String baseId, WeatherBaseListener weatherBaseListener) {
+        addWeatherBaseListener(baseId);
+        this.weatherBaseListener = weatherBaseListener;
     }
 
     public void removeFirestoreCommand(String commandId) {
@@ -263,6 +372,18 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
 
     public static interface MediaListener {
         public void onReceive(Map<String, Object> mediaData);
+    }
+
+    public static interface PlaylistListener {
+        public void onReceive(Map<String, Object> playlistData);
+    }
+
+    public static interface NewsListener {
+        public void onReceive(Map<String, Object> newsData);
+    }
+
+    public static interface WeatherBaseListener {
+        public void onReceive(Map<String, Object> weatherBaseData);
     }
 
     @Override
